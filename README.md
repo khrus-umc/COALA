@@ -24,7 +24,7 @@ Please also cite this paper if you are using COALA for your research!
  cd COALA
  pip install -e .
 ```
-Adjust all paths by globally searching for 'your_path'. Place your CT scan files (in .nii.gz or .nrrd format) in the prediction_input folder.
+Adjust all paths by globally searching for 'your_path'. Place your CT scan files (in .nii.gz format) in the prediction_input folder.
 
 2. Run COALA:
 ```
