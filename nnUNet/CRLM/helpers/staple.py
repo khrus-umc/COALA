@@ -1,0 +1,49 @@
+import os
+import SimpleITK as sitk
+import glob
+import numpy as np
+
+root_dir = 'your_path_to_segmentations'
+output_dir = os.getcwd() + '\\output'
+
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+project_folders = ['your_folders']
+label_values = [0, 1, 2]
+
+for project_folder in os.listdir('ypur_path_to_radiologists_folder'):
+    for label_value in label_values:
+        segmentations = []
+        for radiologist_folder in ['your_radiolgists_folders']:
+            image_path = os.path.join(root_dir, radiologist_folder, project_folder, str(label_value), '*.nii*')
+            segmentations.extend(glob.glob(image_path))
+        print(segmentations)
+        if len(segmentations) > 0:
+            segs = []
+            for segmentation in segmentations:
+                seg = sitk.ReadImage(segmentation)
+                spacing = np.array(list(seg.GetSpacing()))
+                origin = np.array(list(seg.GetOrigin()))
+                image_array = sitk.GetArrayFromImage(seg)
+                image_array = np.where(image_array > 1, 1, 0)
+                seg = sitk.GetImageFromArray(image_array)
+                segs.append(seg)
+            try:
+                foregroundValue = 1
+                threshold = 0.5
+                staple_segmentation_probabilities = sitk.STAPLE(segs, foregroundValue)
+                staple_segmentation_probabilities = sitk.GetArrayFromImage(staple_segmentation_probabilities)
+                staple_segmentation = staple_segmentation_probabilities > threshold
+                staple_segmentation = staple_segmentation.astype(int)
+                staple_segmentation = sitk.GetImageFromArray(staple_segmentation, isVector=False)
+                staple_segmentation.SetSpacing(spacing)
+                staple_segmentation.SetOrigin(origin)
+
+                output_path = os.path.join(output_dir, project_folder + '_' + str(label_value) + '.nii.gz')
+                sitk.WriteImage(staple_segmentation, output_path)
+                print(f"STAPLE successfully ran for {project_folder}_{label_value}! Saved the final segmentation to the output folder")
+            except:
+                print(f"STAPLE could not run for {project_folder}_{label_value}!")
+
+print("Done! all projects have been STAPLED!")
