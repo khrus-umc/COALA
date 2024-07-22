@@ -1,5 +1,5 @@
 ﻿# COALA - COlorectal CAncer Liver metastasis Assessment 
-COALA is an AI-powered tool for automated segmentation of colorectal liver metastases (CRLM) in contrast-enhanced CT scans. This repository contains code for inference and evaulation. Model weights can be downloaded here: 
+COALA is an AI-powered tool for automated segmentation of colorectal liver metastases (CRLM) in contrast-enhanced CT scans. This repository contains code for inference and evaulation. Model weights can be downloaded here: https://www.dropbox.com/scl/fo/cb7zc5ihhenclwvi6pwzc/ADpAzY20WsaHje-zo11drQU?rlkey=m7p532mh8ke8nmw3eyfj96ex1&st=o8355kgn&dl=0. 
 
 ## Key Features
 
@@ -24,7 +24,7 @@ Please also cite this paper if you are using COALA for your research!
  cd COALA
  pip install -e .
 ```
-Adjust all paths by globally searching for 'your_path'. Place your CT scan files (in .nii.gz format) in the prediction_input folder.
+Adjust all paths by globally searching for 'your_path'. Place your CT scan files (in .nii.gz format) in the prediction_input folder. Place the weights in the appropriate folder.
 
 2. Run COALA:
 ```
