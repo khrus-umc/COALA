@@ -25,7 +25,7 @@ Please ensure that you have installed nnunetv2 according to their installation i
  cd COALA
  pip install -e .
 ```
-Adjust all paths by globally searching for 'your_path'. Place your CT scan files (in .nii.gz format) in the prediction_input folder. Place the weights in the appropriate folder.
+Adjust all paths by globally searching for 'your_folder'. Place your CT scan files (in .nii.gz format) in the prediction_input folder. Place the weights in the appropriate folder.
 
 2. Run COALA:
 ```
