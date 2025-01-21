@@ -4,9 +4,9 @@ import pingouin as pg
 import SimpleITK as sitk
 import os
 import numpy as np
-from scipy.stats import wilcoxon
 import nibabel as nib
 from scipy import stats
+import json
 
 
 def calculate_dice(im1_path, im2_path, label1 =1, label2=1):
@@ -148,29 +148,55 @@ def icc(path, group='ai'):
 
 
 def extract_volume(scan_folder, segmentation_folder):
-    scans = [f for f in os.listdir(scan_folder) if f.endswith('.nii') or f.endswith('.nii.gz')]
 
-    df = []
-    for scan in scans:
-        scan_path = os.path.join(scan_folder, scan)
-        segmentation_path = os.path.join(segmentation_folder, scan.split('_0000')[0] + '.nii.gz')
+    scan = [f for f in os.listdir(scan_folder) \
+            if f.endswith('0000.nii') or f.endswith('0000.nii.gz')][0]
 
-        if not os.path.exists(segmentation_path):
-            print(f"Segmentation for {segmentation_path} not found. Skipping...")
-            return
+    scan_path = os.path.join(scan_folder, scan)
+    segmentation_path = os.path.join(segmentation_folder, scan.split('_0000')[0] + '.nii.gz')
 
-        segmentation_data = nib.load(segmentation_path).get_fdata()
+    if not os.path.exists(segmentation_path):
+        print(f"Segmentation for {segmentation_path} not found. Skipping...")
+        return
 
-        nifti_img = nib.load(scan_path)
-        voxel_dims = np.abs(nifti_img.header.get_zooms())
-        voxel_volume = np.prod(voxel_dims)
+    nifti_img = nib.load(scan_path)
+    nifti_data = nifti_img.get_fdata()
+    segmentation_data = nib.load(segmentation_path).get_fdata()
 
-        labels, counts = np.unique(segmentation_data, return_counts=True)
+    if nifti_data.shape != segmentation_data.shape:
+        print(f"Dimensions of {scan} and its segmentation don't match. Skipping...")
+        return
 
-        df.append({"Filename": scan, "Label": labels[len(counts)-1], "Volume (mm^3)": counts[len(counts)-1] * voxel_volume})
+    voxel_dims = np.abs(nifti_img.header.get_zooms())
+    voxel_volume = np.prod(voxel_dims)
 
-    df = pd.DataFrame(df)
-    df.to_excel(segmentation_folder + 'volumes.xlsx', index=False)
+    # Load labels mapping from the dataset.json file
+    with open(os.path.join(segmentation_folder, 'dataset.json'), "r") as json_file:
+        dataset = json.load(json_file)
+        labels_mapping = dataset["labels"]
+        labels_numbers = list(labels_mapping.values())
+
+    # Use np.unique() to check which labels exist in the segmentation_data
+    segmentation_data = segmentation_data.flatten().astype(int)
+    labels_present = np.unique(segmentation_data)
+
+    # Create an array of counts for all labels (0 for labels not present in segmentation_data)
+    counts = np.zeros_like(labels_numbers, dtype=int)
+    counts[labels_present] = np.bincount(segmentation_data)[labels_present]
+
+    #create dictonary of counts of voxels per label
+    segmentation_dict = {label_name: counts[labels_mapping[label_name]]
+                         for label_name in labels_mapping}
+
+    data_dict = {"Filename": scan,
+                    "Label": "metastases",
+                    "Label number": 13, 
+                    "Volume (ml)": segmentation_dict['metastases'] * voxel_volume / 1000, 
+                    "Model name": "COALA", 
+                    "Model version": "0.3.0"}
+    volumes_path = os.path.join(segmentation_folder, 'volumes.json')
+    with open(volumes_path, "w") as outfile:
+        json.dump(data_dict, outfile)
 
 
 if __name__ == '__main__':
