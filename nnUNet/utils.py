@@ -17,11 +17,11 @@ def move(source, target):
             shutil.rmtree(os.path.join(source, file))
 
 
-def rename_files(input_dir, suffix):
+def rename_files(input_dir):
     for filename in os.listdir(input_dir):
-        if filename.endswith('.nii.gz') and '_0000' not in filename and '_0001' not in filename:
+        if filename.endswith('.nii.gz'):
             base_filename = os.path.splitext(os.path.splitext(filename)[0])[0]
-            new_filename = f"{base_filename}_{suffix}.nii.gz"
+            new_filename = f"{base_filename}_0000.nii.gz"
             os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))
 
 
@@ -128,26 +128,32 @@ def metrics(folder1, folder2, label1, label2):
     return scores
 
 
-def run_inference(nnunet_dir, input_dir, output_dir, task_id, model, ts=False):
-    model_dir = nnunet_dir + 'nnunetv2\\nnUNet_results\\' + task_id + '\\nnUNetTrainer__nnUNetPlans__' + model
-    lowres_dir = output_dir + 'prediction_output_lowres\\' if model == '3d_cascade_fullres' else None
-    output_dir = output_dir if 'fullres' in model else output_dir + 'prediction_output_lowres'
-    if ts: model_dir = nnunet_dir + 'nnUNet_results\\' + task_id + '\\nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres'
-
-    folds = (0, 1, 2, 3, 4) if not ts else '0'
+def run_inference(nnunet_dir, input_dir, output_dir, task_id, model):
+    model_dir = os.path.join(nnunet_dir, 'nnunetv2', 'nnUNet_results',
+                             task_id, 'nnUNetTrainer__nnUNetPlans__3d_' + model)
+    lowres_dir = os.path.join(output_dir, 'prediction_output_lowres') \
+        if model == 'cascade_fullres' else None
+    output_dir = output_dir if model == 'cascade_fullres' \
+        else os.path.join(output_dir, 'prediction_output_lowres')
 
     predictor = nnUNetPredictor(
         tile_step_size=0.5,
         use_gaussian=True,
         use_mirroring=True,
         perform_everything_on_gpu=True,
-        device=torch.device('cuda', 0),
+        device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
         verbose=False,
         verbose_preprocessing=False,
         allow_tqdm=True
     )
 
-    predictor.initialize_from_trained_model_folder(model_dir, use_folds=folds, checkpoint_name='checkpoint_final.pth')
-    predictor.predict_from_files(input_dir, output_dir, save_probabilities=False, overwrite=False,
+    predictor.initialize_from_trained_model_folder(model_dir, use_folds=(0, 1, 2, 3, 4),
+                                                   checkpoint_name='checkpoint_final.pth',
+                                                   )
+
+    predictor.predict_from_files(input_dir,
+                                 output_dir,
+                                 save_probabilities=False, overwrite=False,
                                  num_processes_preprocessing=2, num_processes_segmentation_export=2,
-                                 folder_with_segs_from_prev_stage=lowres_dir, num_parts=1, part_id=0)
+                                 folder_with_segs_from_prev_stage=lowres_dir, num_parts=1,
+                                 part_id=0)
