@@ -1,9 +1,7 @@
 '''
 Main script that orchestrates running the COALA model on given input arguments.
 '''
-import os
 import argparse
-import json
 from utils import *
 from CRLM.helpers.eval import *
 
