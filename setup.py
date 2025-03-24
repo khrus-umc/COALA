@@ -22,7 +22,8 @@ setup(
         "SimpleITK==2.2.1",
         "scikit-image==0.22.0",
         "torch==2.0.1+cu117",
-        "tqdm==4.66.1"
+        "tqdm==4.66.1",
+        "openpyxl=3.1.5"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -200,10 +200,10 @@ def extract_volume(scan_folder, segmentation_folder):
 
 
 if __name__ == '__main__':
-    dice_rad('your_path')
-    dice_ai('your_path')
-    dice_ai_NAT('your_path')
+    dice_rad('your_folder')
+    dice_ai('your_folder')
+    dice_ai_NAT('your_folder')
 
-    extract_volume('your_path', 'your_path')
-    icc('your_path', 'ai')
-    icc('your_path', 'rad')
+    extract_volume('your_folder', 'your_folder')
+    icc('your_folder', 'ai')
+    icc('your_folder', 'rad')

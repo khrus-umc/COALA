@@ -12,10 +12,10 @@ if not os.path.exists(output_dir):
 project_folders = ['your_folders']
 label_values = [0, 1, 2]
 
-for project_folder in os.listdir('ypur_path_to_radiologists_folder'):
+for project_folder in os.listdir('your_folder'):
     for label_value in label_values:
         segmentations = []
-        for radiologist_folder in ['your_radiolgists_folders']:
+        for radiologist_folder in ['your_folders']:
             image_path = os.path.join(root_dir, radiologist_folder, project_folder, str(label_value), '*.nii*')
             segmentations.extend(glob.glob(image_path))
         print(segmentations)
