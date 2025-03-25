@@ -8,6 +8,6 @@ pandas==2.0.3
 pingouin==0.5.4
 scipy==1.14.0
 SimpleITK==2.2.1
-skimage==0.22.0
-torch==2.0.1+cu117
+scikit-image==0.21.0
+torch==2.0.1
 tqdm==4.66.1
